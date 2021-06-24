@@ -1,0 +1,373 @@
+package com.kh.cinema.movie;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import com.kh.cinema.home.KHmain;
+import com.kh.cinema.util.ChangePanel;
+import com.kh.cinema.util.CinemaFrame;
+import com.kh.cinema.vo.Movie;
+import com.kh.cinema.vo.Reserve;
+
+public class ReserveMenu extends JPanel {
+	private CinemaFrame cinemaFrame;
+	private JPanel reservePanel;
+	private String userID;
+	private String stitle;
+	private String stheater;
+	private String sdate;
+	private String stime;
+	public Reserve reserve;
+	private Movie[] mf;
+	private JList mlist = new JList();
+	private JScrollPane mscroller;
+	private JList tlist = new JList();
+	private JScrollPane tscroller;
+	private JList dlist = new JList();
+	private JScrollPane dscroller;
+	private JList mtlist = new JList();
+	private JScrollPane mtscroller;
+
+	public ReserveMenu(CinemaFrame cinemaFrame, String getID) {
+		this.cinemaFrame = cinemaFrame;
+		this.reservePanel = this;
+		this.userID = getID;
+
+		// 상단 -> 팝콘이미지/제목
+		setSize(1200, 100); // 패널 사이즈
+		setBackground(new Color(109, 186, 238)); // 패널 배경색
+		setLayout(null);
+
+		Image icon = new ImageIcon("images/mainPopcorn.png").getImage().getScaledInstance(70, 70, 0);
+		JLabel popcorn = new JLabel(new ImageIcon(icon));
+		popcorn.setBounds(10, 10, 70, 70); // 이미지 위치, 크기
+		add(popcorn);
+
+		JLabel ltitle = new JLabel("KH시네마 >> 예매");
+		ltitle.setForeground(Color.WHITE); // 라벨 폰트 색
+		ltitle.setBounds(70, 0, 300, 70);
+		ltitle.setFont(new Font(null, Font.BOLD, 22)); // 라벨 폰트
+		add(ltitle);
+
+		// ---------------------------------------------------
+
+		// 중간1 -> 영화/포스터/극장/날짜/상영시간 제목
+		JPanel contents = new JPanel();
+		contents.setLayout(null); // 패널 정렬
+		contents.setBackground(new Color(109, 186, 238)); // 패널 배경색
+		contents.setLocation(0, 100); // 패널 위치
+		contents.setSize(1200, 100); // 패널 크기
+		// 영화
+		JLabel movie = new JLabel("영화");
+		movie.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+		movie.setForeground(Color.WHITE); // 폰트 색
+		movie.setFont(new Font(null, Font.BOLD, 20)); // 폰트 크기
+		movie.setSize(190, 36); // 라벨 사이즈
+		movie.setLocation(155, 55); // 라벨 위치
+		movie.setOpaque(true);
+		movie.setBackground(new Color(52, 152, 219)); // 라벨 배경색
+		contents.add(movie);
+
+		// 포스터
+		JLabel poster = new JLabel("포스터");
+		poster.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+		poster.setForeground(Color.WHITE); // 폰트 색
+		poster.setFont(new Font(null, Font.BOLD, 20)); // 폰트 크기
+		poster.setSize(190, 36); // 라벨 사이즈
+		poster.setLocation(350, 55); // 라벨 위치
+		poster.setOpaque(true);
+		poster.setBackground(new Color(52, 152, 219)); // 라벨 배경색
+		contents.add(poster);
+
+		// 극장
+		JLabel theater = new JLabel("극장");
+		theater.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+		theater.setForeground(Color.WHITE); // 폰트 색
+		theater.setFont(new Font(null, Font.BOLD, 20)); // 폰트 크기
+		theater.setSize(190, 36); // 라벨 사이즈
+		theater.setLocation(545, 55); // 라벨 위치
+		theater.setOpaque(true);
+		theater.setBackground(new Color(52, 152, 219)); // 라벨 배경색
+		contents.add(theater);
+
+		// 날짜
+		JLabel date = new JLabel("날짜");
+		date.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+		date.setForeground(Color.WHITE); // 폰트 색
+		date.setFont(new Font(null, Font.BOLD, 20)); // 폰트 크기
+		date.setSize(109, 36); // 라벨 사이즈
+		date.setLocation(740, 55); // 라벨 위치
+		date.setOpaque(true);
+		date.setBackground(new Color(52, 152, 219)); // 라벨 배경색
+		contents.add(date);
+
+		// 상영시간
+		JLabel movietime = new JLabel("상영시간");
+		movietime.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+		movietime.setForeground(Color.WHITE); // 폰트 색
+		movietime.setFont(new Font(null, Font.BOLD, 20)); // 폰트 크기
+		movietime.setSize(190, 36); // 라벨 사이즈
+		movietime.setLocation(854, 55); // 라벨 위치
+		movietime.setOpaque(true);
+		movietime.setBackground(new Color(52, 152, 219)); // 라벨 배경색
+		contents.add(movietime);
+
+		// ---------------------------------------------------
+
+		// 중간2 -> 영화/포스터/극장/날짜/상영시간 JList, imageLabel
+		JPanel clist = new JPanel();
+		clist.setLayout(new FlowLayout(FlowLayout.CENTER)); // 패널 정렬
+		clist.setBackground(new Color(109, 186, 238)); // 패널 배경색
+		clist.setLocation(0, 200); // 패널 위치
+		clist.setSize(1200, 470); // 패널 크기
+
+		// 영화 정보 불러오기
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("movieList.dat"))) {
+
+			mf = (Movie[]) ois.readObject();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		// 영화 제목
+		// 관람가 아이콘 넣으려면 찾아본 방법이 맵을 이용해서 <제목, 아이콘>으로 생성하는 방법이 있었는데,
+		// 영화전체를 객체로 관리하는데 가능할지 모르겠음
+		ArrayList<String> movie2 = new ArrayList<String>(); // 중복없이 영화제목을 arraylist로 추출
+		for (int i = 0; i < mf.length; i++) {
+			System.out.println(movie2);
+			if (!movie2.contains(mf[i].getTitle())) {
+				movie2.add(mf[i].getTitle());
+			}
+		}
+
+		String[] marray = new String[movie2.size()]; // arraylist를 배열로 바꾸기
+		int size = 0;
+		for (String temp : movie2) {
+			marray[size++] = temp;
+		}
+		// 영화
+		mlist = new JList(marray); // 리스트 생성
+		mlist.setBackground(new Color(204, 228, 246)); // 리스트 색상
+		mlist.setFont(new Font(null, Font.BOLD, 18)); // 리스트 폰트
+		mscroller = new JScrollPane(mlist); // 스크롤 달기
+		clist.add(mscroller);
+		mscroller.setPreferredSize(new Dimension(190, 430)); // 리스트 크기
+		// 포스터 - 선택된 제목과 포스터의 이름이 일치하면 해당 포스터를 불러와서 image label
+		Image poster2 = new ImageIcon("images/poster.png").getImage().getScaledInstance(190, 190, 0);
+		JLabel plabel = new JLabel(new ImageIcon(poster2));
+		clist.add(plabel);
+		// 극장
+		tlist.setBackground(new Color(204, 228, 246));
+		tlist.setFont(new Font(null, Font.BOLD, 18));
+		tscroller = new JScrollPane(tlist);
+		clist.add(tscroller);
+		tscroller.setPreferredSize(new Dimension(190, 430));
+		// 날짜
+		dlist.setBackground(new Color(204, 228, 246));
+		dlist.setFont(new Font(null, Font.PLAIN, 20));
+		dscroller = new JScrollPane(dlist);
+		clist.add(dscroller);
+		dscroller.setPreferredSize(new Dimension(109, 430));
+		// 시간
+		mtlist.setBackground(new Color(204, 228, 246));
+		mtlist.setFont(new Font(null, Font.PLAIN, 20));
+		mtscroller = new JScrollPane(mtlist);
+		clist.add(mtscroller);
+		mtscroller.setPreferredSize(new Dimension(190, 430));
+
+		mlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		mlist.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				stitle = ((String) mlist.getSelectedValue()); // 선택한 값을 불러와서 저장
+				mlist.setEnabled(false); // 리스트에서 선택하고 나면 변경할 수 없도록
+
+				String filePath = "";
+				if (stitle.equals("루카")) {
+					filePath = "images/luca.png";
+				} else if (stitle.equals("⑫크루엘라")) {
+					filePath = "images/cruella.png";
+				} else if (stitle.equals("⑮콰이어트플레이스2")) {
+					filePath = "images/quiet.png";
+				} else if (stitle.equals("⑮컨저링3")) {
+					filePath = "images/conjuring.png";
+				}
+				Image poster3 = new ImageIcon(filePath).getImage().getScaledInstance(190, 328, 0);
+				plabel.setIcon(new ImageIcon(poster3));
+
+				// 선택한 영화제목과 영화제목이 일치하는 극장 불러오기
+				List<String> theater2 = new ArrayList<String>(); // 중복없이 arraylist로 추출
+				for (int i = 0; i < mf.length; i++) {
+					if (stitle.equals(mf[i].getTitle())) {
+						if (!theater2.contains(mf[i].getTheater())) {
+							theater2.add(mf[i].getTheater());
+						}
+					}
+				}
+				String[] tharray = new String[theater2.size()]; // arraylist를 배열로 바꾸기
+				int size2 = 0;
+				for (String temp2 : theater2) {
+					tharray[size2++] = temp2;
+				}
+				tlist.setListData(tharray); // ** 새로운 객체를 만드는 것이 아니라 setListData이용하기
+			}
+		});
+
+		tlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tlist.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				stheater = ((String) tlist.getSelectedValue());
+				tlist.setEnabled(false);
+				// 날짜 - 선택된 제목, 극장과 일치하는 날짜를 목록으로
+				List<String> date2 = new ArrayList<String>(); // 중복없이 arraylist로 추출
+				for (int i = 0; i < mf.length; i++) {
+					if (stheater.equals(mf[i].getTheater())) {
+						if (!date2.contains(mf[i].getDate())) {
+							date2.add(mf[i].getDate());
+						}
+					}
+				}
+				String[] darray = new String[date2.size()]; // arraylist를 배열로 바꾸기
+				int size3 = 0;
+				for (String temp3 : date2) {
+					darray[size3++] = temp3;
+				}
+				dlist.setListData(darray);
+			}
+		});
+
+		dlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		dlist.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				sdate = ((String) dlist.getSelectedValue());
+				dlist.setEnabled(false);
+				// 상영시간 - 선택된 제목, 극장, 날짜와 일치하는 시간을 목록으로
+				List<String> movietime2 = new ArrayList<String>(3); // 중복없이 arraylist로 추출
+				for (int i = 0; i < mf.length; i++) {
+					if (sdate.equals(mf[i].getDate())) {
+						if (!movietime2.contains(mf[i].getTime())) {
+							movietime2.add(mf[i].getTime());
+						}
+					}
+				}
+				String[] mtarray = new String[movietime2.size()]; // arraylist를 배열로 바꾸기
+				int size4 = 0;
+				for (String temp4 : movietime2) {
+					mtarray[size4++] = temp4;
+				}
+				mtlist.setListData(mtarray);
+			}
+		});
+
+		mtlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		mtlist.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				stime = ((String) mtlist.getSelectedValue());
+				mtlist.setEnabled(false);
+				for (int i = 0; i < mf.length; i++) {
+					if (stitle.equals(mf[i].getTitle()) && stheater.equals(mf[i].getTheater())
+							&& sdate.equals(mf[i].getDate()) && stime.equals(mf[i].getTime())) {
+
+					}
+				}
+			}
+		});
+
+		// ---------------------------------------------------
+
+		// 하단 -> 이전화면/좌석선택
+		JPanel button = new JPanel();
+		button.setLayout(null); // 패널 정렬
+		button.setBackground(new Color(109, 186, 238)); // 패널 배경색
+		button.setLocation(0, 670); // 패널 위치
+		button.setSize(1200, 130); // 패널 크기
+
+		JButton previous = new JButton("이전 화면");
+		previous.setSize(100, 40); // 버튼 크기
+		previous.setBackground(new Color(94, 94, 94)); // 버튼 색상
+		previous.setForeground(Color.WHITE); // 폰트 색상
+		previous.setFont(new Font(null, Font.PLAIN, 15)); // 폰트 크기
+		previous.setLocation(155, 0); // 버튼 위치
+		button.add(previous);
+
+		previous.addActionListener(new ActionListener() { // 이전 화면 버튼 클릭시
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				ChangePanel.changePanel(cinemaFrame, reservePanel, new KHmain(cinemaFrame, userID));
+			}
+		});
+
+		JButton reset = new JButton("다시 선택");
+		reset.setSize(100, 40); // 버튼 크기
+		reset.setBackground(new Color(94, 94, 94)); // 버튼 색상
+		reset.setForeground(Color.WHITE); // 폰트 색상
+		reset.setFont(new Font(null, Font.PLAIN, 15)); // 폰트 크기
+		reset.setLocation(840, 0); // 버튼 위치
+		button.add(reset);
+
+		reset.addActionListener(new ActionListener() { // 좌석 선택 버튼 클릭
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ChangePanel.changePanel(cinemaFrame, reservePanel, new ReserveMenu(cinemaFrame, userID));
+				; // 선택 초기화(이 패널 다시 불러오기)
+			}
+		});
+
+		JButton seat = new JButton("좌석 선택");
+		seat.setSize(100, 40); // 버튼 크기
+		seat.setBackground(new Color(94, 94, 94)); // 버튼 색상
+		seat.setForeground(Color.WHITE); // 폰트 색상
+		seat.setFont(new Font(null, Font.PLAIN, 15)); // 폰트 크기
+		seat.setLocation(945, 0); // 버튼 위치
+		button.add(seat);
+
+		seat.addActionListener(new ActionListener() { // 좌석 선택 버튼 클릭 -> 예매정보 저장하고 좌석 선택 화면으로 넘어감
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				reserve = new Reserve(userID, (String) mlist.getSelectedValue(), (String) tlist.getSelectedValue(),
+						(String) dlist.getSelectedValue(), (String) mtlist.getSelectedValue(), "");
+				ChangePanel.changePanel(cinemaFrame, reservePanel, new Seat(cinemaFrame, reserve, userID));
+			}
+		});
+
+		add(contents);
+		add(clist);
+		add(button);
+
+	}
+
+}

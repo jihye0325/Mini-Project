@@ -1,0 +1,240 @@
+package com.kh.cinema.movie;
+
+import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import com.kh.cinema.home.KHmain;
+import com.kh.cinema.util.ChangePanel;
+import com.kh.cinema.util.CinemaFrame;
+import com.kh.cinema.vo.Reserve;
+
+public class ConfirmReserve extends JPanel {
+	private CinemaFrame cinemaframe;
+	private JPanel confirmReserve;
+	private String userID;
+	private ArrayList<Reserve> listReserve, myReserve;
+	private String title;
+	private String theater;
+	private String date;
+	private String time;
+	private Dialog dialog;
+	private JPanel bgpanel;
+
+	public ConfirmReserve(CinemaFrame cinemaframe, String connectedID) {
+
+		this.confirmReserve = this;
+		this.cinemaframe = cinemaframe;
+		this.userID = connectedID;
+
+		setSize(1200, 800);
+		setBackground(new Color(109, 186, 238));
+		setLayout(null);
+
+		Image icon = new ImageIcon("image/movie.PNG").getImage().getScaledInstance(70, 70, 0);
+		JLabel movieLabel = new JLabel(new ImageIcon(icon));
+		movieLabel.setBounds(0, 0, 70, 70);
+
+		JLabel titleLabel = new JLabel("KH 시네마 >> 예매 확인");
+		titleLabel.setForeground(Color.WHITE); // 라벨 폰트 색상 변경
+		titleLabel.setFont(titleLabel.getFont().deriveFont(25.0f)); // 폰트 크기 변경
+		titleLabel.setBounds(70, 0, 300, 70);
+
+		listReserve = new ArrayList<>();
+		myReserve = new ArrayList<>();
+
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("reserve.dat"))) {
+			listReserve = (ArrayList<Reserve>) ois.readObject(); // 리스트에 파일에서 가져온 객체 정보들 저장
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		for (Reserve r : listReserve) {
+
+			if (r.getUserID().equals(userID)) {
+				myReserve.add(r);
+			}
+		}
+
+		String[] sTitle = new String[myReserve.size()];
+
+		for (int i = 0; i < myReserve.size(); i++) {
+			sTitle[i] = myReserve.get(i).getTitle();
+		}
+
+		JComboBox movieList = new JComboBox(sTitle);
+		movieList.setBounds(450, 300, 300, 50);
+		movieList.setFont(movieList.getFont().deriveFont(25.0f));
+
+		JLabel labelTitle = new JLabel();
+		labelTitle.setFont(new Font(null, Font.BOLD, 30));
+		labelTitle.setLocation(30, 50);
+		labelTitle.setSize(300, 100);
+
+		JLabel labelTheater = new JLabel();
+		labelTheater.setFont(new Font(null, Font.BOLD, 20));
+		labelTheater.setLocation(230, 130);
+		labelTheater.setSize(130, 100);
+
+		JLabel labelDate = new JLabel();
+		labelDate.setFont(new Font(null, Font.BOLD, 20));
+		labelDate.setLocation(230, 160);
+		labelDate.setSize(130, 100);
+
+		JLabel labelTime = new JLabel();
+		labelTime.setFont(new Font(null, Font.BOLD, 20));
+		labelTime.setLocation(230, 140);
+		labelTime.setSize(130, 200);
+
+		JLabel labelSeat = new JLabel("좌석");
+		labelSeat.setFont(new Font(null, Font.BOLD, 20));
+		labelSeat.setLocation(230, 170);
+		labelSeat.setSize(130, 200);
+
+		JLabel labelPoster = new JLabel();
+		labelPoster.setLocation(30, 160);
+		labelPoster.setSize(180, 250);
+
+		movieList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cb = (JComboBox) e.getSource();
+				title = (String) cb.getSelectedItem();
+				System.out.println(title);
+				labelTitle.setText(title);
+
+				for (int i = 0; i < myReserve.size(); i++) {
+					if (title == myReserve.get(i).getTitle()) {
+						labelTheater.setText(myReserve.get(i).getTheater());
+					}
+				}
+				for (int i = 0; i < myReserve.size(); i++) {
+					if (title == myReserve.get(i).getTitle()) {
+						labelDate.setText(myReserve.get(i).getDate());
+					}
+				}
+				for (int i = 0; i < myReserve.size(); i++) {
+					if (title == myReserve.get(i).getTitle()) {
+						labelTime.setText(myReserve.get(i).getTime());
+					}
+				}
+				for (int i = 0; i < myReserve.size(); i++) {
+					if (title == myReserve.get(i).getTitle()) {
+						labelSeat.setText(myReserve.get(i).getSeatNum());
+					}
+				}
+				String filePath = "";
+				if (title.equals("루카")) {
+					filePath = "images/luca.png";
+				} else if (title.equals("⑫크루엘라")) {
+					filePath = "images/cruella.png";
+				} else if (title.equals("⑮콰이어트플레이스2")) {
+					filePath = "images/quiet.png";
+				} else if (title.equals("⑮컨저링3")) {
+					filePath = "images/conjuring.png";
+				}
+				Image poster = new ImageIcon(filePath).getImage().getScaledInstance(180, 250, 0);
+				labelPoster.setIcon(new ImageIcon(poster));
+
+			}
+		});
+
+		JButton confirm = new JButton("예매확인");
+		confirm.setBounds(450, 600, 300, 100);
+		confirm.setFont(confirm.getFont().deriveFont(40.0f));
+		confirm.setBorderPainted(false);
+
+		dialog = new Dialog(cinemaframe, "예매 확인"); // (주인 창, 새로 뜰 다이어로그 창 title)
+		dialog.setBounds(500, 100, 420, 600);
+
+		Image icon2 = new ImageIcon("images/ticket.png").getImage().getScaledInstance(400, 600, 0);
+
+		bgpanel = new JPanel() {
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				// g.drawImage(icon2, 0, 0, null);
+				g.drawImage(icon2, 0, 0, 400, 600, this);
+				setOpaque(true); // 그림을 표시하게 설정,투명하게 조절
+
+			}
+		};
+
+		bgpanel.setLayout(null);
+
+		bgpanel.setSize(400, 600);
+		dialog.add(bgpanel);
+		dialog.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				dialog.dispose();
+			}
+		});
+
+		bgpanel.add(labelTitle);
+		bgpanel.add(labelTheater);
+		bgpanel.add(labelDate);
+		bgpanel.add(labelTime);
+		bgpanel.add(labelSeat);
+		bgpanel.add(labelPoster);
+
+		confirm.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.setVisible(true);
+			}
+		});
+		
+//		JButton cancel = new JButton("예매취소");
+//		cancel.setBounds(700, 600, 300, 100);
+//		cancel.setFont(cancel.getFont().deriveFont(40.0f));
+//		cancel.setBorderPainted(false);
+
+		Image icon3 = new ImageIcon("images/btnBack.PNG").getImage().getScaledInstance(70, 70, 0);
+		JButton backButton = new JButton(new ImageIcon(icon3));
+		backButton.setPreferredSize(new Dimension(70, 70));
+		backButton.setBackground(new Color(109, 186, 238));
+		backButton.setBorderPainted(false);
+		backButton.setBounds(5, 675, 70, 70);
+		backButton.addActionListener(new ActionListener() {
+		
+			
+			public void actionPerformed(ActionEvent e) {
+				ChangePanel.changePanel(cinemaframe, confirmReserve, new KHmain(cinemaframe, userID));
+
+			}
+		});
+
+		add(movieList);
+		add(movieLabel);
+		add(titleLabel);
+		add(confirm);
+//		add(cancel);
+		add(backButton);
+
+		// ----------------------------------------------------------
+
+	}
+
+}
