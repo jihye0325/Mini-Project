@@ -1,0 +1,437 @@
+package com.kh.cinema.movie;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+
+import com.kh.cinema.util.ChangePanel;
+import com.kh.cinema.util.CinemaFrame;
+import com.kh.cinema.vo.Movie;
+import com.kh.cinema.vo.Reserve;
+
+public class Snack extends JPanel {
+
+	private int snackAmount;
+
+	int popMPrice = 4500;
+	int popLPrice = 6000;
+	int cokeMPrice = 2500;
+	int cokeLPrice = 3500;
+	int sodaMPrice = 2500;
+	int sodaLPrice = 3500;
+	int nachosPrice = 4000;
+	int popi;
+	int cokei;
+	int sodai;
+	int nachosi;
+
+	String seatNum;
+	private Reserve movieResrve;
+	private int seatAmount;
+	private CinemaFrame cinemaFrame;
+	private JPanel snack;
+	private String userID;
+	private String snackName = ""; // 선택한 snack명을 넘겨주기 위한 변수
+
+	public Snack(CinemaFrame cinemaFrame, Reserve reserve, String seatNum, String getID, int seatAmount) {
+		this.cinemaFrame = cinemaFrame;
+		this.userID = getID;
+		this.movieResrve = reserve;
+		this.seatNum = seatNum;
+		this.seatAmount = seatAmount;
+		this.snack = this;
+
+		JFrame frame = new JFrame("Snack");
+		frame.setSize(1200, 800);
+		frame.setLayout(new BorderLayout(0, 0));
+		
+		try {
+			frame.setIconImage(ImageIO.read(new File("images/mainPopcorn.png")));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		topPanel.setBackground(new Color(109, 186, 238));
+
+		JPanel centerPanel = new JPanel();
+		centerPanel.setBackground(new Color(109, 186, 238));
+		centerPanel.setLayout(null);
+
+		// ---topPanel -> 타이틀---------------------------------------------------------
+		JLabel titleLabel = new JLabel("KH 시네마 >> 간식 코너");
+		titleLabel.setForeground(Color.WHITE);
+		titleLabel.setFont(titleLabel.getFont().deriveFont(22.0f));
+
+		// 타이틀라벨 앞에 팝콘 이미지 삽입
+		Image popicon = new ImageIcon("images/mainPopcorn.PNG").getImage().getScaledInstance(50, 50, 0);
+		JLabel mainPopcornLabel = new JLabel(new ImageIcon(popicon));
+		mainPopcornLabel.setLocation(0, 0);
+
+		// -------------------------------------------------------------------------------------------
+
+		// 팝콘, 콜라, 소다, 나초 이미지 넣기.
+
+		Image popcorn = new ImageIcon("images/popcorn.png").getImage().getScaledInstance(120, 120, 0);
+		JLabel popcornLabel = new JLabel(new ImageIcon(popcorn));
+		popcornLabel.setSize(120, 120);
+		popcornLabel.setBackground(Color.white);
+		popcornLabel.setLocation(180, 120);
+		popcornLabel.repaint();
+
+		Image coke = new ImageIcon("images/coke.png").getImage().getScaledInstance(120, 120, 0);
+		JLabel cokeLabel = new JLabel(new ImageIcon(coke));
+		cokeLabel.setSize(120, 120);
+		cokeLabel.setLocation(popcornLabel.getLocation().x + 350, popcornLabel.getLocation().y);
+		cokeLabel.repaint();
+
+		Image soda = new ImageIcon("images/soda.png").getImage().getScaledInstance(120, 120, 0);
+		JLabel sodaLabel = new JLabel(new ImageIcon(soda));
+		sodaLabel.setSize(120, 120);
+		sodaLabel.setBackground(Color.white);
+		sodaLabel.setLocation(cokeLabel.getLocation().x + 350, cokeLabel.getLocation().y);
+		sodaLabel.repaint();
+
+		Image nachos = new ImageIcon("images/nachos.png").getImage().getScaledInstance(120, 120, 0);
+		JLabel nachosLabel = new JLabel(new ImageIcon(nachos));
+		nachosLabel.setSize(120, 120);
+		nachosLabel.setBackground(Color.white);
+		nachosLabel.setLocation(popcornLabel.getLocation().x + 175, cokeLabel.getLocation().y + 250);
+		nachosLabel.repaint();
+
+		JRadioButton popMedium = new JRadioButton("M (4.5)");
+		JRadioButton popLarge = new JRadioButton("L (6.0)");
+
+		JRadioButton cokeMedium = new JRadioButton("M (2.5)");
+		JRadioButton cokeLarge = new JRadioButton("L (3.5)");
+
+		JRadioButton sodaMedium = new JRadioButton("M (2.5)");
+		JRadioButton sodaLarge = new JRadioButton("L (3.5)");
+
+		JRadioButton nachosMedium = new JRadioButton("M (4.0)");
+
+		// 라디오버튼 사이즈, 위치, 색상
+		Dimension radioSize = new Dimension(80, 30);
+
+		popMedium.setSize(radioSize);
+		popLarge.setSize(radioSize);
+		cokeMedium.setSize(radioSize);
+		cokeLarge.setSize(radioSize);
+		sodaMedium.setSize(radioSize);
+		sodaLarge.setSize(radioSize);
+		nachosMedium.setSize(radioSize);
+
+		popMedium.setLocation(150, 250);
+		popLarge.setLocation(230, 250);
+		cokeMedium.setLocation(500, 250);
+		cokeLarge.setLocation(580, 250);
+		sodaMedium.setLocation(850, 250);
+		sodaLarge.setLocation(930, 250);
+		nachosMedium.setLocation(380, 500);
+
+		popMedium.setBackground(new Color(109, 186, 238));
+		popLarge.setBackground(new Color(109, 186, 238));
+		cokeMedium.setBackground(new Color(109, 186, 238));
+		cokeLarge.setBackground(new Color(109, 186, 238));
+		sodaMedium.setBackground(new Color(109, 186, 238));
+		sodaLarge.setBackground(new Color(109, 186, 238));
+		nachosMedium.setBackground(new Color(109, 186, 238));
+
+		// 값출력칸
+		TextArea cal = new TextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY);
+		cal.setText("   종류        가격        수량        합계\n\n");
+		cal.setBackground(Color.white);
+		cal.setSize(300, 80);
+		cal.setLocation(700, 420);
+		cal.setEditable(false);
+
+		// 그룹지정
+		ButtonGroup popGroup = new ButtonGroup();
+		popGroup.add(popMedium);
+		popGroup.add(popLarge);
+
+		// popGroup.clearSelection(); ->보류한다
+
+		ButtonGroup cokeGroup = new ButtonGroup();
+		cokeGroup.add(cokeMedium);
+		cokeGroup.add(cokeLarge);
+
+		ButtonGroup sodaGroup = new ButtonGroup();
+		sodaGroup.add(sodaMedium);
+		sodaGroup.add(sodaLarge);
+
+		// 수량칸과 출력
+		String[] gaesu = { "1", "2", "3" };
+		int[] gaesucount = { 1, 2, 3 };
+
+		JComboBox popgaesu = new JComboBox(gaesu);
+		int popint = popgaesu.getSelectedIndex(); // 팝콘인트값
+		popgaesu.setSize(40, 30);
+		popgaesu.setLocation(320, 250);
+		popgaesu.setSelectedIndex(0);
+
+		popgaesu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox popcb = (JComboBox) e.getSource();
+				String popcount = (String) popcb.getSelectedItem();
+				int intpopcount = popcb.getSelectedIndex();
+				System.out.println(popcount);
+				if (popMedium.isSelected()) {
+					cal.append("       " + popcount + "         " + popMPrice * (intpopcount + 1) + '\n');
+					popi = popMPrice * (intpopcount + 1);
+					snackName += "팝콘M ";
+					snackName = snackName.replace("팝콘L", "");
+				} else if (popLarge.isSelected()) {
+					cal.append("       " + popcount + "         " + popLPrice * (intpopcount + 1) + '\n');
+					popi = popMPrice * (intpopcount + 1);
+					snackName += "팝콘M ";
+					snackName = snackName.replace("팝콘M", "");
+				}
+			}
+		});
+
+		JComboBox cokegaesu = new JComboBox(gaesu);
+		int cokeint = cokegaesu.getSelectedIndex(); // 콜라인트값
+		cokegaesu.setSize(40, 30);
+		cokegaesu.setLocation(670, 250);
+		cokegaesu.setSelectedIndex(0);
+
+		cokegaesu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cokecb = (JComboBox) e.getSource();
+				String cokecount = (String) cokecb.getSelectedItem();
+				int intcokecount = cokecb.getSelectedIndex();
+				System.out.println(cokecount);
+
+				if (cokeMedium.isSelected()) {
+					cal.append("       " + cokecount + "         " + cokeMPrice * (intcokecount + 1) + '\n');
+					cokei = cokeMPrice * (intcokecount + 1);
+					snackName += "콜라M ";
+					snackName = snackName.replace("콜라L", "");
+				} else if (cokeLarge.isSelected()) {
+					cal.append("       " + cokecount + "         " + cokeLPrice * (intcokecount + 1) + '\n');
+					cokei = cokeLPrice * (intcokecount + 1);
+					snackName += "콜라L ";
+					snackName = snackName.replace("콜라M", "");
+				}
+			}
+		});
+
+		JComboBox sodagaesu = new JComboBox(gaesu);
+		int sodaint = sodagaesu.getSelectedIndex(); // 소다인트값
+		sodagaesu.setSize(40, 30);
+		sodagaesu.setLocation(1020, 250);
+		sodagaesu.setSelectedIndex(0);
+
+		sodagaesu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox sodacb = (JComboBox) e.getSource();
+				String sodacount = (String) sodacb.getSelectedItem();
+				int intsodacount = sodacb.getSelectedIndex();
+				System.out.println(sodacount);
+				if (sodaMedium.isSelected()) {
+					cal.append("       " + sodacount + "         " + sodaMPrice * (intsodacount + 1) + '\n');
+					sodai = sodaMPrice * (intsodacount + 1);
+					snackName += "사이다M ";
+					snackName = snackName.replace("사이다L", "");
+				} else if (sodaLarge.isSelected()) {
+					cal.append("       " + sodacount + "         " + sodaLPrice * (intsodacount + 1) + '\n');
+					sodai = sodaLPrice * (intsodacount + 1);
+					snackName += "사이다L ";
+					snackName = snackName.replace("사이다M", "");
+				}
+			}
+		});
+
+		JComboBox nachosgaesu = new JComboBox(gaesu);
+		int nachoscount = nachosgaesu.getSelectedIndex(); // 나초인트값
+		nachosgaesu.setSize(40, 30);
+		nachosgaesu.setLocation(470, 500);
+		nachosgaesu.setSelectedIndex(0);
+
+		nachosgaesu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox nachoscb = (JComboBox) e.getSource();
+				String nachoscount = (String) nachoscb.getSelectedItem();
+				int inachoscount = nachoscb.getSelectedIndex();
+				System.out.println(nachoscount);
+				cal.append("         " + nachoscount + "          " + nachosPrice * (inachoscount + 1) + '\n');
+				nachosi = nachosPrice * (inachoscount + 1);
+				snackName += "나초 ";
+			}
+		});
+
+		// 확인 inputbtn
+		JButton inputbtn = new JButton("모두 구매하기");
+		inputbtn.setSize(150, 37);
+		inputbtn.setLocation(700, 510);
+
+		inputbtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				snackAmount = popi + cokei + sodai + nachosi;
+				cal.append('\n' + "===============" + '\n' + snackAmount);
+				System.out.println(snackAmount);
+
+			}
+		});
+
+		// 취소칸
+		JButton cancelbtn = new JButton("주문 취소");
+		cancelbtn.setSize(150, 37);
+		cancelbtn.setLocation(850, 510);
+
+		cancelbtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cal.setText("   종류        가격        수량        합계\n\n");
+				snackName = "";
+			}
+		});
+
+		String popSelect = (String) popgaesu.getSelectedItem();
+		String cokeSelect = (String) cokegaesu.getSelectedItem();
+		String sodaSelect = (String) sodagaesu.getSelectedItem();
+		String nachosSelect = (String) nachosgaesu.getSelectedItem();
+
+		popMedium.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("팝콘 M    4500원");
+				cal.append("팝콘 M    4500원");
+			}
+		});
+
+		popLarge.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("팝콘 L    6000원");
+				cal.append("팝콘 L     6000원");
+			}
+		});
+
+		cokeMedium.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("콜라 M    2500원");
+				cal.append("콜라 M      2500원");
+			}
+		});
+		cokeLarge.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("콜라 L    3500원");
+				cal.append("콜라 L      3500원");
+			}
+		});
+		sodaMedium.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("사이다 M   2500원");
+				cal.append("사이다 M   2500원");
+			}
+		});
+		sodaLarge.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// System.out.println("사이다 L 3500원");
+				cal.append("사이다 L   3500원");
+			}
+		});
+
+		nachosMedium.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("나초 M   4000원");
+				cal.append("나초 M      " + nachosPrice);
+			}
+
+		});
+
+		// 이전화면 다음화면 버튼
+		JButton cancelBtn = new JButton("이전 단계");
+		cancelBtn.setSize(100, 40);
+		cancelBtn.setLocation(80, 600);
+		cancelBtn.repaint();
+		cancelBtn.addActionListener(new ActionListener() { // 좌석 선택 버튼 클릭
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.setVisible(false);
+				ChangePanel.changePanel(cinemaFrame, snack, new Seat(cinemaFrame, reserve, getID));
+			}
+		});
+
+		JButton nextBtn = new JButton("다음 단계");
+		nextBtn.setSize(100, 40);
+		nextBtn.setLocation(1000, 600);
+		nextBtn.repaint();
+		nextBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.setVisible(false);
+				ChangePanel.changePanel(cinemaFrame, snack,
+						new Payment(cinemaFrame, movieResrve, seatNum, seatAmount, snackAmount, snackName, userID));
+			}
+		});
+
+		// 패널올리기
+
+		topPanel.add(mainPopcornLabel);
+		topPanel.add(titleLabel);
+
+		centerPanel.add(nextBtn);
+		centerPanel.add(cancelBtn);
+		centerPanel.add(cal);
+		centerPanel.add(cancelbtn);
+		centerPanel.add(inputbtn);
+		centerPanel.add(popcornLabel);
+		centerPanel.add(cokeLabel);
+		centerPanel.add(sodaLabel);
+		centerPanel.add(nachosLabel);
+		centerPanel.add(popMedium);
+		centerPanel.add(popLarge);
+		centerPanel.add(cokeMedium);
+		centerPanel.add(cokeLarge);
+		centerPanel.add(sodaMedium);
+		centerPanel.add(sodaLarge);
+
+		centerPanel.add(nachosMedium);
+		centerPanel.add(popgaesu);
+		centerPanel.add(cokegaesu);
+		centerPanel.add(sodagaesu);
+		centerPanel.add(nachosgaesu);
+
+		frame.add(topPanel, "North");
+		frame.add(centerPanel, "Center");
+		frame.setLocationRelativeTo(null);
+		frame.setResizable(false);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+
+	}
+}

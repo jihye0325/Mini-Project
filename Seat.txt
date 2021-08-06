@@ -1,0 +1,845 @@
+package com.kh.cinema.movie;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+import com.kh.cinema.util.ChangePanel;
+import com.kh.cinema.util.CinemaFrame;
+import com.kh.cinema.vo.Reserve;
+
+public class Seat extends JPanel {
+	private Reserve movie;
+	private JPanel seat;
+	private CinemaFrame cinemaFrame;
+	private String userID;
+	String seatNum = "";
+	int seatAmount;
+
+	public Seat() {
+	}
+
+	public Seat(CinemaFrame cinemaFrame, Reserve reserve, String getID) {
+		this.userID = getID;
+		this.movie = reserve;
+		this.seat = this;
+
+		JFrame frame = new JFrame("Seat Reservation");
+		frame.setSize(1200, 800);
+		frame.setLayout(new BorderLayout(0, 0));
+		try {
+			frame.setIconImage(ImageIO.read(new File("images/mainPopcorn.png")));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		topPanel.setBackground(new Color(109, 186, 238));
+
+		JPanel centerPanel = new JPanel();
+		centerPanel.setBackground(new Color(109, 186, 238));
+		centerPanel.setLayout(null);
+
+		// top패널 타이틀
+		JLabel titleLabel = new JLabel("KH 시네마 >> 좌석 예매");
+		titleLabel.setForeground(Color.WHITE);
+		titleLabel.setFont(titleLabel.getFont().deriveFont(22.0f));
+
+		// 타이틀라벨 앞에 팝콘 이미지 삽입
+		Image popicon = new ImageIcon("images/mainPopcorn.PNG").getImage().getScaledInstance(50, 50, 0);
+		JLabel mainPopcornLabel = new JLabel(new ImageIcon(popicon));
+		mainPopcornLabel.setLocation(0, 0);
+
+		// -------------------------------------------------------------------------------------------
+
+		// tfWn : 코로나안내사항
+		JTextArea tfWn = new JTextArea("  CODIV-19로 인해 예매 시 띄어앉기를 \r\n" + "  준수하여 주시기 바랍니다. \r\n"
+				+ "  입장 전 전자출입부 작성 및\r\n" + "  관람중에는 마스크 착용 필수."); // 개행이 왜 안되는거지? -> Area로 해결: 중앙정렬은?
+		tfWn.setBackground(Color.white);
+		tfWn.setFont(new Font(null, Font.CENTER_BASELINE, 15));
+		tfWn.setSize(300, 210);
+		tfWn.setLocation(700, 100);
+		tfWn.setEditable(false);
+
+		// 게스트와 인원수 콤보박스
+		String[] guest = { "일반 (13000원)", "청소년 (8000원)", "장애인 (5000원)" };
+		int person[] = { 13000, 8000, 5000 };
+
+		String[] guestint = { "1 명", "2 명", "3 명" };
+		int pcount[] = { 1, 2, 3 };
+
+		JComboBox guestList = new JComboBox(guest);
+		JComboBox guestintList = new JComboBox(guestint);
+
+		// 콤보박스 사이즈위치 시작
+
+		guestList.setSize(180, 30);
+		guestList.setLocation(700, 330);
+		guestList.setSelectedIndex(0);
+
+		guestintList.setSize(80, 30);
+		guestintList.setLocation(920, 330);
+		guestintList.setSelectedIndex(0);
+
+		// 값출력칸
+		TextArea cal = new TextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY);
+		cal.setText("   종류        가격        수량        합계\n\n");
+		cal.setBackground(Color.white);
+		cal.setSize(300, 400);
+		cal.setLocation(700, 420);
+		cal.setEditable(false);
+
+		// 게스트와 출력값
+		guestList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cbg = (JComboBox) e.getSource();
+				String guestmoney = (String) cbg.getSelectedItem();
+				System.out.println(guestmoney);
+			}
+		});
+
+		guestintList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cbgi = (JComboBox) e.getSource();
+				String guestintmoney = (String) cbgi.getSelectedItem();
+				System.out.println(guestintmoney);
+			}
+		});
+
+		// 적용버튼
+		JButton btn = new JButton("적용하기");
+		btn.setSize(300, 32);
+		btn.setLocation(700, 363);
+
+		// 적용버튼
+		btn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String guestselect = (String) guestList.getSelectedItem();
+				String guestintselect = (String) guestintList.getSelectedItem();
+				int iguestselect = guestList.getSelectedIndex();
+				int iguestintselect = guestintList.getSelectedIndex();
+
+				cal.append(guestselect + "   " + guestintselect + "     "
+						+ person[iguestselect] * pcount[iguestintselect] + "\r\n");
+
+				seatAmount += person[iguestselect] * pcount[iguestintselect];
+			}
+		});
+
+		// 콤보박스값
+		JLabel guestlabel = new JLabel();
+		guestlabel.setSize(300, 300);
+		guestlabel.setLocation(700, 500);
+
+		// 좌석버튼 스트링값잇음
+		ArrayList<Reserve> reserveList = new ArrayList<>();
+		String s = ""; // 예약되어있는 좌석 판단 하는 문자열
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("reserve.dat"))) {
+			reserveList = (ArrayList<Reserve>) ois.readObject(); // 리스트에 파일에서 가져온 객체 정보들 저장
+			for (Reserve reserveMovie : reserveList) {
+				if (movie.getTitle().equals(reserveMovie.getTitle())) {
+					s += reserveMovie.getSeatNum();
+				}
+			}
+		} catch (FileNotFoundException e1) {
+			// 예매된 영화가 없어서 파일이 존재하지 않을때 파일을 생성해준다.
+			ArrayList<Reserve> tempReserve = new ArrayList<>();
+			tempReserve.add(new Reserve("", "", "", "", "", ""));
+			try (ObjectOutputStream ReserveSave = new ObjectOutputStream(new FileOutputStream("reserve.dat"))) {
+				ReserveSave.writeObject(tempReserve);
+			} catch (FileNotFoundException e2) {
+				e2.printStackTrace();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		JButton A1 = new JButton("A1");
+		A1.setBackground(Color.WHITE);
+		if (s.contains("A1")) {
+			A1.setEnabled(false);
+			A1.setBackground(Color.yellow);
+		}
+
+		A1.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					A1.setBackground(Color.yellow);
+					System.out.println("A1");
+					seatNum += "A1 ";
+					cal.append("A1");
+					reserve.setSeatNum(seatNum);
+				} else {
+					A1.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("A1", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton B1 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton C1 = new JButton("C1");
+		C1.setBackground(Color.WHITE);
+		if (s.contains("C1")) {
+			C1.setEnabled(false);
+			C1.setBackground(Color.yellow);
+		}
+		C1.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					C1.setBackground(Color.yellow);
+					System.out.println("C1");
+					seatNum += "C1 ";
+					cal.append("C1");
+				} else {
+					C1.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("C1", "");
+					// System.out.println(0);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton D1 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton E1 = new JButton("E1");
+		E1.setBackground(Color.WHITE);
+		if (s.contains("E1")) {
+			E1.setEnabled(false);
+			E1.setBackground(Color.yellow);
+		}
+		E1.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					E1.setBackground(Color.yellow);
+					System.out.println("E1");
+					seatNum += "E1 ";
+					cal.append("E1");
+				} else {
+					E1.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("E1", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton A2 = new JButton("A2");
+		A2.setBackground(Color.WHITE);
+		if (s.contains("A2")) {
+			A2.setEnabled(false);
+			A2.setBackground(Color.yellow);
+		}
+		A2.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					A2.setBackground(Color.yellow);
+					System.out.println("A2");
+					seatNum += "A2 ";
+					cal.append("A2");
+				} else {
+					A2.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("A2", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton B2 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton C2 = new JButton("C2");
+		C2.setBackground(Color.WHITE);
+		if (s.contains("C2")) {
+			C2.setEnabled(false);
+			C2.setBackground(Color.yellow);
+		}
+		C2.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					C2.setBackground(Color.yellow);
+					System.out.println("C2");
+					seatNum += "C2 ";
+					cal.append("C2");
+				} else {
+					C2.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("C2", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton D2 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton E2 = new JButton("E2");
+		E2.setBackground(Color.WHITE);
+		if (s.contains("E2")) {
+			E2.setEnabled(false);
+			E2.setBackground(Color.yellow);
+		}
+		E2.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					E2.setBackground(Color.yellow);
+					System.out.println("E2");
+					seatNum += "E2 ";
+					cal.append("E2");
+				} else {
+					E2.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("E2", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton A3 = new JButton("A3");
+		A3.setBackground(Color.WHITE);
+		if (s.contains("A3")) {
+			A3.setEnabled(false);
+			A3.setBackground(Color.yellow);
+		}
+		A3.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					A3.setBackground(Color.yellow);
+					System.out.println("A3");
+					seatNum += "A3 ";
+					cal.append("A3");
+				} else {
+					A3.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("A3", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton B3 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton C3 = new JButton("C3");
+		C3.setBackground(Color.WHITE);
+		if (s.contains("C3")) {
+			C3.setEnabled(false);
+			C3.setBackground(Color.yellow);
+		}
+		C3.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					C3.setBackground(Color.yellow);
+					System.out.println("C3");
+					seatNum += "C3 ";
+					cal.append("C3");
+				} else {
+					C3.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("C3", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton D3 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton E3 = new JButton("E3");
+		E3.setBackground(Color.WHITE);
+		if (s.contains("E3")) {
+			E3.setEnabled(false);
+			E3.setBackground(Color.yellow);
+		}
+		E3.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					E3.setBackground(Color.yellow);
+					System.out.println("E3");
+					seatNum += "E3 ";
+					cal.append("E3");
+				} else {
+					E3.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("E3", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+		JButton A4 = new JButton("A4");
+		A4.setBackground(Color.WHITE);
+		if (s.contains("A4")) {
+			A4.setEnabled(false);
+			A4.setBackground(Color.yellow);
+		}
+		A4.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					A4.setBackground(Color.yellow);
+					System.out.println("A4");
+					seatNum += "A4 ";
+					cal.append("A4");
+				} else {
+					A4.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("A4", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton B4 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton C4 = new JButton("C4");
+		C4.setBackground(Color.WHITE);
+
+		if (s.contains("C4")) {
+			C4.setEnabled(false);
+			C4.setBackground(Color.yellow);
+		}
+		C4.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					C4.setBackground(Color.yellow);
+					System.out.println("C4");
+					seatNum += "C4 ";
+					cal.append("C4");
+				} else {
+					C4.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("C4", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton D4 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton E4 = new JButton("E4");
+		E4.setBackground(Color.WHITE);
+		if (s.contains("E4")) {
+			E4.setEnabled(false);
+			E4.setBackground(Color.yellow);
+		}
+		E4.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					E4.setBackground(Color.yellow);
+					System.out.println("E4");
+					seatNum += "E4 ";
+					cal.append("E4");
+				} else {
+					E4.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("E4", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton A5 = new JButton("A5");
+		A5.setBackground(Color.WHITE);
+		if (s.contains("A5")) {
+			A5.setEnabled(false);
+			A5.setBackground(Color.yellow);
+		}
+		A5.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					A5.setBackground(Color.yellow);
+					System.out.println("A5");
+					seatNum += "A5 ";
+					cal.append("A5");
+				} else {
+					A5.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("A5", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton B5 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton C5 = new JButton("C5");
+		C5.setBackground(Color.WHITE);
+		if (s.contains("C5")) {
+			C5.setEnabled(false);
+			C5.setBackground(Color.yellow);
+		}
+
+		C5.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					C5.setBackground(Color.yellow);
+					System.out.println("C5");
+					seatNum += "C5 ";
+					cal.append("C5");
+				} else {
+					C5.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("C5", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		JButton D5 = new JButton(new ImageIcon("images/NonSeat.png"));
+		JButton E5 = new JButton("E5");
+		E5.setBackground(Color.WHITE);
+		if (s.contains("E5")) {
+			E5.setEnabled(false);
+			E5.setBackground(Color.yellow);
+		}
+
+		E5.addActionListener(new ActionListener() {
+			int count = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				count++;
+				if (count % 2 != 0) {
+					E5.setBackground(Color.yellow);
+					System.out.println("E5");
+					seatNum += "E5 ";
+					cal.append("E5");
+				} else {
+					E5.setBackground(Color.WHITE);
+					seatNum = seatNum.replace("E5", "");
+					// System.out.println(1);
+					cal.setText("   종류        가격        수량        합계\n\n");
+				}
+			}
+		});
+
+		// 구매, 취소칸
+
+		// 구매하기 inputbtn
+		JButton inputbtn = new JButton("모두 구매하기");
+		inputbtn.setSize(150, 37);
+		inputbtn.setLocation(700, 510);
+
+		inputbtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				cal.append('\n' + "===============" + '\n' + seatAmount);
+				System.out.println(seatAmount);
+				System.out.println(seatNum);
+
+			}
+		});
+
+		// 알림창
+		// 구매하기 누르면 뜨는 알림창.
+		Dialog dialog1 = new Dialog(frame);
+		dialog1.setUndecorated(true);
+		dialog1.setBounds(600, 300, 350, 250);
+
+		dialog1.setLayout(null);
+		inputbtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog1.setVisible(true);
+
+			}
+		});
+
+		JPanel dialog1panel = new JPanel();
+		dialog1panel.setBackground(new Color(000, 051, 102));
+		dialog1panel.setLocation(0, 0);
+		dialog1panel.setSize(350, 35);
+
+		Image icon1 = new ImageIcon("images/mainPopcorn.PNG").getImage().getScaledInstance(25, 25, 4);
+		JLabel label07 = new JLabel(new ImageIcon(icon1));
+		dialog1panel.add(label07);
+		dialog1.add(dialog1panel);
+
+		JLabel label06 = new JLabel("KH 시네마                                       ");
+		Font font20 = new Font("맑은 고딕", Font.BOLD, 15);
+		label06.setFont(font20);
+		label06.setForeground(Color.WHITE);
+
+		dialog1panel.add(label06);
+		dialog1.add(dialog1panel);
+		Font font10 = new Font("맑은 고딕", Font.BOLD, 18);
+
+		JLabel label27 = new JLabel("예매 감사합니다.");
+		dialog1.add(label27);
+		label27.setLocation(90, 60);
+		label27.setSize(200, 50);
+		label27.setFont(font10);
+
+		JLabel label28 = new JLabel("<html> 청소년과 장애인은 현장에서.<br>관련된 증을 확인합니다.</html>");
+		dialog1.add(label28);
+		label28.setLocation(90, 110);
+		label28.setSize(200, 40);
+		label28.setForeground(Color.GRAY);
+
+		// 결제확인창 ok버튼
+		JButton Button23 = new JButton("OK");
+		Button23.setLocation(140, 180);
+		Button23.setSize(70, 40);
+
+		Button23.setBackground(new Color(234, 234, 234));
+		Button23.setForeground(new Color(000, 204, 204));
+
+		dialog1.add(Button23);
+		Button23.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog1.dispose();
+			}
+		});
+		// 취소칸
+		JButton cancelbtn = new JButton("주문 취소");
+		cancelbtn.setSize(150, 37);
+		cancelbtn.setLocation(850, 510);
+
+		cancelbtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cal.setText("   종류        가격        수량        합계\n\n");
+				seatAmount = 0;
+			}
+		});
+
+		// 좌석사이즈
+		Dimension seatSize = new Dimension(72, 72);
+		A1.setSize(seatSize);
+		A2.setSize(seatSize);
+		A3.setSize(seatSize);
+		A4.setSize(seatSize);
+		A5.setSize(seatSize);
+		B1.setSize(seatSize);
+		B2.setSize(seatSize);
+		B3.setSize(seatSize);
+		B4.setSize(seatSize);
+		B5.setSize(seatSize);
+		C1.setSize(seatSize);
+		C2.setSize(seatSize);
+		C3.setSize(seatSize);
+		C4.setSize(seatSize);
+		C5.setSize(seatSize);
+		C5.setSize(seatSize);
+		D1.setSize(seatSize);
+		D2.setSize(seatSize);
+		D3.setSize(seatSize);
+		D4.setSize(seatSize);
+		D5.setSize(seatSize);
+		E1.setSize(seatSize);
+		E2.setSize(seatSize);
+		E3.setSize(seatSize);
+		E4.setSize(seatSize);
+		E5.setSize(seatSize);
+
+		// 좌석배치
+		A1.setLocation(230, 124);
+		B1.setLocation(A1.getLocation().x + 78, A1.getLocation().y);
+		C1.setLocation(B1.getLocation().x + 78, A1.getLocation().y);
+		D1.setLocation(C1.getLocation().x + 78, A1.getLocation().y);
+		E1.setLocation(D1.getLocation().x + 78, A1.getLocation().y);
+
+		A2.setLocation(A1.getLocation().x, A1.getLocation().y + 78);
+		B2.setLocation(A1.getLocation().x + 78, A1.getLocation().y + 78);
+		C2.setLocation(B2.getLocation().x + 78, A1.getLocation().y + 78);
+		D2.setLocation(C2.getLocation().x + 78, A1.getLocation().y + 78);
+		E2.setLocation(D2.getLocation().x + 78, A1.getLocation().y + 78);
+
+		A3.setLocation(A2.getLocation().x, A2.getLocation().y + 78);
+		B3.setLocation(A2.getLocation().x + 78, A2.getLocation().y + 78);
+		C3.setLocation(B3.getLocation().x + 78, A2.getLocation().y + 78);
+		D3.setLocation(C3.getLocation().x + 78, A2.getLocation().y + 78);
+		E3.setLocation(D3.getLocation().x + 78, A2.getLocation().y + 78);
+
+		A4.setLocation(A3.getLocation().x, A3.getLocation().y + 78);
+		B4.setLocation(A4.getLocation().x + 78, A3.getLocation().y + 78);
+		C4.setLocation(B4.getLocation().x + 78, A3.getLocation().y + 78);
+		D4.setLocation(C4.getLocation().x + 78, A3.getLocation().y + 78);
+		E4.setLocation(D4.getLocation().x + 78, A3.getLocation().y + 78);
+
+		A5.setLocation(A4.getLocation().x, A4.getLocation().y + 78);
+		B5.setLocation(A5.getLocation().x + 78, A4.getLocation().y + 78);
+		C5.setLocation(B5.getLocation().x + 78, A4.getLocation().y + 78);
+		D5.setLocation(C5.getLocation().x + 78, A4.getLocation().y + 78);
+		E5.setLocation(D5.getLocation().x + 78, A4.getLocation().y + 78);
+
+		// 이미지로 스크린과 좌석배열 아이콘삽입.완료
+
+		Image abcd = new ImageIcon("images/ABCD.png").getImage().getScaledInstance(35, 387, 0);
+		JLabel abcdLabel = new JLabel(new ImageIcon(abcd));
+		abcdLabel.setSize(24, 387);
+		abcdLabel.setBackground(Color.white);
+		abcdLabel.setLocation(195, 120);
+		abcdLabel.repaint();
+
+		Image screen = new ImageIcon("images/Screen.png").getImage().getScaledInstance(420, 27, 0);
+		JLabel screenLabel = new JLabel(new ImageIcon(screen));
+		screenLabel.setSize(420, 27);
+		screenLabel.setLocation(195, 90);
+		screenLabel.repaint();
+
+		// 이전화면 다음화면 버튼
+		JButton bcancelBtn = new JButton("이전 단계");
+		bcancelBtn.setSize(100, 40);
+		bcancelBtn.setLocation(80, 600);
+		bcancelBtn.repaint();
+
+		bcancelBtn.addActionListener(new ActionListener() { // 좌석 선택 버튼 클릭
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.setVisible(false);
+				ChangePanel.changePanel(cinemaFrame, seat, new ReserveMenu(cinemaFrame, userID));
+			}
+		});
+
+		JButton nextBtn = new JButton("다음 단계");
+		nextBtn.setSize(100, 40);
+		nextBtn.setLocation(1000, 600);
+		nextBtn.repaint();
+
+		nextBtn.addActionListener(new ActionListener() { // 알림창, seatNum 저장, seatAmount저장
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				movie.setSeatNum(seatNum);
+				System.out.println(movie);
+				frame.setVisible(false);
+				ChangePanel.changePanel(cinemaFrame, seat, new Snack(cinemaFrame, movie, seatNum, userID, seatAmount));
+			}
+		});
+
+		topPanel.add(mainPopcornLabel);
+		topPanel.add(titleLabel);
+
+		centerPanel.add(tfWn);
+		centerPanel.add(guestList);
+		centerPanel.add(guestintList);
+		centerPanel.add(guestlabel);
+		centerPanel.add(btn);
+
+		centerPanel.add(cal);
+		centerPanel.add(abcdLabel);
+		centerPanel.add(screenLabel);
+		centerPanel.add(nextBtn);
+		centerPanel.add(bcancelBtn);
+		centerPanel.add(cancelbtn);
+		centerPanel.add(inputbtn);
+
+		// 좌석세팅. 더좋은코드가 있는지 물어보기.
+		centerPanel.add(A1);
+		centerPanel.add(B1);
+		centerPanel.add(C1);
+		centerPanel.add(D1);
+		centerPanel.add(E1);
+		centerPanel.add(A2);
+		centerPanel.add(B2);
+		centerPanel.add(C2);
+		centerPanel.add(D2);
+		centerPanel.add(E2);
+		centerPanel.add(A3);
+		centerPanel.add(B3);
+		centerPanel.add(C3);
+		centerPanel.add(D3);
+		centerPanel.add(E3);
+		centerPanel.add(A4);
+		centerPanel.add(B4);
+		centerPanel.add(C4);
+		centerPanel.add(D4);
+		centerPanel.add(E4);
+		centerPanel.add(A5);
+		centerPanel.add(B5);
+		centerPanel.add(C5);
+		centerPanel.add(D5);
+		centerPanel.add(E5);
+
+		frame.add(topPanel, "North");
+		frame.add(centerPanel, "Center");
+
+		frame.setLocationRelativeTo(null);
+		frame.setResizable(false);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+	}
+}
